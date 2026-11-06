@@ -1,7 +1,7 @@
-# Teknik Mimari — Taslak
+# Teknik Mimari
 
 ## İlk yön
-Web tabanlı/PWA dikey kesit. Framework, oyun render teknolojisi ve backend henüz seçilmedi.
+Web tabanlı, mobil öncelikli dikey kesit (DEC-002, DEC-009). TypeScript + React + Vite, Zod, Vitest + Playwright (DEC-008). Sahneler katmanlı 2D (DEC-007). MVP'de backend yok.
 
 ## Önerilen katmanlar
 - Presentation: sahneler, UI, ses ve etkileşim.
@@ -15,4 +15,4 @@ Web tabanlı/PWA dikey kesit. Framework, oyun render teknolojisi ve backend hen�
 API anahtarları tarayıcıya konmaz. Kullanıcının gerçek hayatı ve ilişkileri varsayılan olarak toplanmaz. Gizli bilgiler GitHub'a commit edilmez. AI çıktıları doğrudan veritabanı komutu veya yetkili işlem olarak çalıştırılmaz.
 
 ## Açık teknik kararlar
-React/Vite mi, başka bir UI yığını mı? 2D sahne motoru gerekli mi? AI sağlayıcısı, saklama biçimi, maliyet sınırları ve analitik yaklaşımı henüz net değil.
+AI sağlayıcısı, sunucu tarafı saklama, maliyet sınırları ve analitik yaklaşımı MVP sonrasına kadar açıktır.

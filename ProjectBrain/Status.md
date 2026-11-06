@@ -1,25 +1,26 @@
 # Current Status — 2026-11-06
 
 ## Aşama
-Discovery / proje temelleri. Onaylı teknik yığın veya üretime hazır AI altyapısı yok. Oynanabilir bir deneme prototipi var (MVP değil).
+Kararlar alındı; MVP geliştirmesine hazırlık (M0). Henüz MVP kodu yok. Oynanabilir bir deneme prototipi var (`prototypes/kirazli/`, MVP değil).
 
 ## Tamamlananlar
 - Ürün vizyonu konuşuldu.
 - GitHub deposu oluşturuldu.
 - Constitution, Vision, GDD ve Claude handoff dokümanlarının ilk sürümü hazırlandı.
-- Mevcut durum değerlendirmesi ve MVP planı önerisi: `docs/MVP-Plan.md` (onay bekliyor).
-- Deneme prototipi: `prototypes/kirazli/` — "Kirazlı'da Bir Ay", 5 sahne, bedelli seçimler, mektupla kapanış, hayat ağacı. Kısa duygusal deneyim yaklaşımını sınamak için; senaryo kararı değildir.
+- Mevcut durum değerlendirmesi ve MVP planı: `docs/MVP-Plan.md` (kabul edildi).
+- Deneme prototipi: `prototypes/kirazli/`. "Kirazlı'da Bir Ay": 5 sahne, bedelli seçimler, mektupla kapanış, hayat ağacı.
+- Kabul edilen kararlar (2026-11-06): DEC-006 senaryo (Kasaba), DEC-007 katmanlı 2D, DEC-008 TypeScript + React + Vite, DEC-009 mobil öncelikli web, DEC-010 PR tabanlı akış, DEC-011 geçici görseller, DEC-012 tüm hakları saklı (`LICENSE`). DEC-002 teyit edildi.
 
-## Onay bekleyenler
-- `docs/MVP-Plan.md` içindeki DEC-006…DEC-012 önerileri (senaryo, sahne yaklaşımı, yığın, cihaz, Git akışı, asset, lisans).
+## Bekleyenler
 - Prototip geri bildirimi: seçimlerin etkisi hissediliyor mu, mektup etkili mi, metin miktarı doğru mu?
+- `main` için GitHub branch koruma kuralı (depo sahibi açar).
+- Final görsel üretim yöntemi (DEC-011 kapsamında ayrı karar).
 
 ## Sonraki görevler
-1. Proje sahibi ile ilk senaryoyu ve hedef cihazı netleştir.
-2. Bir sayfalık 10 dakikalık oynanış akışı yaz.
-3. Sahne yaklaşımını seç: statik/katmanlı 2D, 2.5D veya 3D.
-4. Teknik yığını kararlaştır.
-5. Minimal web prototipi oluştur; kayıt/yükleme ve en az üç anlamlı seçim ekle.
+1. M0: `docs/scenarios/kasaba.md`: 10 dakikalık akış, durum değişkenleri, sonlar, NPC profilleri (prototip ve geri bildirim temel alınır).
+2. M1: `frontend/` içinde Vite + React + TypeScript iskeleti, ESLint/Prettier, Vitest, GitHub Actions CI.
+3. M2: Deterministik çekirdek: state şeması, `applyChoice`, son motoru, içerik şeması ve doğrulayıcı, birim testler.
+4. M3–M6: `docs/MVP-Plan.md` kilometre taşlarına göre.
 
 ## Riskler
 - Görsel kalite hedefinin MVP bütçesini aşması.

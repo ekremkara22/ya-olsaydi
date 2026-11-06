@@ -1,6 +1,6 @@
-# MVP Geliştirme Planı — v0.1 (ÖNERİ)
+# MVP Geliştirme Planı — v0.1
 
-**Durum:** Öneri — proje sahibinin onayını bekliyor. Bu belgedeki hiçbir seçenek, `ProjectBrain/Decisions.md` içine "Kabul edildi" olarak yazılana kadar karar sayılmaz.
+**Durum:** Kabul edildi (2026-11-06). Kararlar `ProjectBrain/Decisions.md` içinde DEC-006…DEC-012 olarak kayıtlıdır.
 **Tarih:** 2026-11-06
 **Hazırlayan rol:** Project Director (Claude)
 
@@ -29,9 +29,9 @@
 
 ---
 
-## 2. Onay bekleyen kararlar ve öneriler
+## 2. Kararlar (kabul edildi, 2026-11-06)
 
-| ID | Konu | Öneri | Gerekçe | Alternatifler |
+| ID | Konu | Karar | Gerekçe | Alternatifler |
 |---|---|---|---|---|
 | DEC-006 | İlk senaryo | **"Küçük bir kasabaya taşınsaydım"** | Dar kapsam, ilişki ve huzur/para/zaman dengesi doğal; güç fantezisine kaymaz (Anayasa §3); görsel olarak lüks gerektirmez | Köy (benzer, daha yalnız), Zenginlik (gösterişli görsel + güç fantezisi riski) |
 | DEC-007 | Sahne yaklaşımı | **Katmanlı 2D** (illüstrasyon katmanları, hafif parallax, gün/ışık renklendirme, CSS animasyon) | En düşük maliyetle sinematik his; performans ve erişilebilirlik kolay; sonra 2.5D'ye büyütülebilir | 2.5D (Pixi/Three), 3D (yüksek maliyet) |
@@ -39,7 +39,7 @@
 | DEC-009 | Hedef cihaz | **Mobil öncelikli responsive web**, masaüstünde de tam çalışır | Paylaşım ve test kolaylığı; DEC-002 ile uyumlu | Önce masaüstü |
 | DEC-010 | Geliştirme akışı | `main` korumalı; `feat/*`, `fix/*`, `docs/*` dalları → PR → CI yeşil → merge; Conventional Commits; SemVer etiketleri (`v0.1.0` = ilk oynanabilir MVP) | Sürüm kontrollü, geri alınabilir ilerleme | Doğrudan `main`'e commit |
 | DEC-011 | Asset stratejisi | MVP'de **kendi ürettiğimiz placeholder** (SVG/gradient/şekil); final görseller için yöntem (AI üretim / sipariş) ayrıca karar | Görsel bütçe riski (Status) yönetilir; lisans sorunu olmaz | Baştan AI görsel üretimi |
-| DEC-012 | Lisans | Kod için açık kaynak mı, "tüm hakları saklıdır" mı? | Depo public | MIT / Proprietary |
+| DEC-012 | Lisans | **Tüm hakları saklıdır** (`LICENSE`) | Olası ticari ürünü korur; depo public | MIT |
 
 ---
 
@@ -63,7 +63,7 @@
 
 ---
 
-## 4. Teknik tasarım özeti (DEC-008 onaylanırsa)
+## 4. Teknik tasarım özeti (DEC-008)
 
 ```
 frontend/
@@ -100,7 +100,7 @@ Her madde bir GitHub issue'su ve bir PR olarak ilerler.
 
 ---
 
-## 6. Senaryo taslağı — yalnızca DEC-006 "Kasaba" seçilirse
+## 6. Senaryo taslağı (DEC-006: Kasaba)
 
 Bu bir başlangıç önerisidir; isimler, mekânlar ve sonlar M0'da birlikte netleşir.
 
@@ -112,8 +112,8 @@ Bu bir başlangıç önerisidir; isimler, mekânlar ve sonlar M0'da birlikte net
 
 ---
 
-## 7. İlk somut adımlar (onaydan sonra)
+## 7. Sıradaki somut adımlar
 
-1. Onaylanan kararları `Decisions.md`'ye işle, bu planı "Kabul edildi" yap, `Status.md`'yi güncelle (`docs/` dalı + PR).
-2. Senaryo belgesini birlikte yaz.
+1. ~~Kararları kaydet, planı kabul et, Status'u güncelle.~~ (Tamamlandı.)
+2. Senaryo belgesini birlikte yaz (`docs/scenarios/kasaba.md`). Temel: `prototypes/kirazli/`.
 3. M1 iskeletini `feat/scaffold` dalında kur, CI'ı yeşile getir, PR aç.

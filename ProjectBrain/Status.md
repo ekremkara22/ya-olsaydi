@@ -1,7 +1,7 @@
 # Current Status — 2026-11-06
 
 ## Aşama
-Kararlar alındı; MVP geliştirmesine hazırlık (M0). Henüz MVP kodu yok. Oynanabilir bir deneme prototipi var (`prototypes/kirazli/`, MVP değil).
+Kararlar alındı; M1 (proje iskeleti + CI) tamamlandı. Sırada M0 senaryo belgesi ve M2 deterministik çekirdek var. Oyun mantığı henüz yok. Oynanabilir bir deneme prototipi var (`prototypes/kirazli/`, MVP değil).
 
 ## Tamamlananlar
 - Ürün vizyonu konuşuldu.

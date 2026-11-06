@@ -1,0 +1,81 @@
+/*
+ * Tasarım belirteçleri (prototypes/kirazli ile aynı palet).
+ * Tek ve bilinçli bir alacakaranlık teması; açık tema MVP kapsamında değil.
+ */
+:root {
+  color-scheme: dark;
+  --ink: #16141d;
+  --ink-2: #211e2b;
+  --line: #3a3546;
+  --paper: #efe6d8;
+  --paper-dim: #b9afa3;
+  --kiraz: #e0566c;
+  --ihlamur: #a7c2a0;
+  --fener: #f1b75e;
+  --f-display: 'Alegreya', 'Palatino Linotype', Georgia, serif;
+  --f-body: 'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--f-body);
+  line-height: 1.55;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fener);
+  outline-offset: 3px;
+}
+
+.shell {
+  max-width: 70ch;
+  margin: 0 auto;
+  padding-block: max(48px, env(safe-area-inset-top, 0px)) 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 14px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--fener);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.title em {
+  color: var(--kiraz);
+}
+
+.lead {
+  margin: 0;
+}
+
+.fineprint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--paper-dim);
+}

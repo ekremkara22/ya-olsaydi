@@ -18,7 +18,7 @@ Kararlar alındı; MVP geliştirmesine hazırlık (M0). Henüz MVP kodu yok. Oyn
 
 ## Sonraki görevler
 1. M0: `docs/scenarios/kasaba.md`: 10 dakikalık akış, durum değişkenleri, sonlar, NPC profilleri (prototip ve geri bildirim temel alınır).
-2. M1: `frontend/` içinde Vite + React + TypeScript iskeleti, ESLint/Prettier, Vitest, GitHub Actions CI.
+2. ~~M1: `frontend/` içinde Vite + React + TypeScript iskeleti, ESLint/Prettier, Vitest, GitHub Actions CI.~~ (Tamamlandı. GitHub Pages önizlemesi ertelendi; depo ayarlarında Pages açılınca eklenebilir.)
 3. M2: Deterministik çekirdek: state şeması, `applyChoice`, son motoru, içerik şeması ve doğrulayıcı, birim testler.
 4. M3–M6: `docs/MVP-Plan.md` kilometre taşlarına göre.
 

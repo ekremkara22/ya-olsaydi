@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kirazlı'da Bir Ay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:wght@400;500;700&family=Caveat:wght@500;600&display=swap">
+<style>
+/* Layout: cinematic stage on top (painted canvas scene), story panel below like a subtitle card; HUD as a thin instrument strip. Single deliberate dusk palette. */
+:root {
+  color-scheme: dark;
+  --ink: #16141d;         /* gece mürekkebi: page ground */
+  --ink-2: #211e2b;       /* panel surface */
+  --line: #3a3546;        /* hairlines */
+  --paper: #efe6d8;       /* main text */
+  --paper-dim: #b9afa3;   /* secondary text */
+  --kiraz: #e0566c;       /* accent: cherry */
+  --kiraz-deep: #a8344a;
+  --ihlamur: #a7c2a0;     /* positive / huzur */
+  --fener: #f1b75e;       /* lamp gold */
+  --letter: #f4ecdc;      /* letter paper */
+  --letter-ink: #3b2f2a;
+  --f-display: "Alegreya", "Palatino Linotype", Georgia, serif;
+  --f-body: "Alegreya Sans", "Segoe UI", system-ui, sans-serif;
+  --f-hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+  --fs-0: .8125rem; --fs-1: 1rem; --fs-2: 1.125rem; --fs-3: 1.5rem; --fs-4: 2.25rem;
+  --r: 10px;
+}
+html, body { height: 100%; }
+body {
+  background: var(--ink); color: var(--paper);
+  font-family: var(--f-body); font-size: var(--fs-1); line-height: 1.55;
+}
+body.big-text { font-size: 1.15rem; }
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--fener); outline-offset: 3px; }
+
+.app { max-width: 1100px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 12px 40px; display: grid; gap: 14px; }
+
+/* HUD */
+.hud { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-block: 4px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.brand { font-family: var(--f-display); font-weight: 700; font-size: var(--fs-2); letter-spacing: .01em; margin: 0; white-space: nowrap; }
+.brand span { color: var(--kiraz); }
+.clock { font-size: var(--fs-0); text-transform: uppercase; letter-spacing: .12em; color: var(--paper-dim); white-space: nowrap; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 16px; flex: 1 1 380px; justify-content: flex-end; }
+.stat { display: grid; gap: 2px; min-width: 92px; }
+.stat-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--paper-dim); }
+.stat-val { font-variant-numeric: tabular-nums; font-weight: 700; font-size: .95rem; }
+.meter { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 50%; background: var(--ihlamur); border-radius: 3px; transition: width .6s ease; }
+.meter.rel i { background: var(--kiraz); }
+.stat.flash .stat-val { animation: flash 1.2s ease; }
+@keyframes flash { 0% { color: var(--fener); } 100% { color: var(--paper); } }
+.tools { display: flex; gap: 8px; }
+.tool { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: var(--fs-0); cursor: pointer; color: var(--paper-dim); }
+.tool:hover { color: var(--paper); border-color: var(--paper-dim); }
+.tool .count { color: var(--fener); font-variant-numeric: tabular-nums; }
+
+/* Stage */
+.stage { position: relative; width: 100%; height: clamp(240px, 50vh, 560px); border-radius: var(--r); overflow: hidden; background: #241f33; }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fade { position: absolute; inset: 0; background: var(--ink); opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+.stage.dark .fade { opacity: 1; }
+.hotspot { position: absolute; transform: translate(-50%, -50%); width: 44px; height: 44px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; padding: 0; }
+.hotspot::before { content: ""; position: absolute; inset: 12px; border-radius: 50%; border: 2px solid var(--fener); box-shadow: 0 0 12px var(--fener); animation: pulse 2.4s ease-in-out infinite; }
+.hotspot.seen::before { border-color: rgba(239,230,216,.45); box-shadow: none; animation: none; }
+.hotspot .tip { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); white-space: nowrap; background: rgba(22,20,29,.85); color: var(--paper); font-size: var(--fs-0); padding: 3px 9px; border-radius: 6px; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.hotspot:hover .tip, .hotspot:focus-visible .tip { opacity: 1; }
+@keyframes pulse { 0%,100% { transform: scale(.85); opacity: .7; } 50% { transform: scale(1.1); opacity: 1; } }
+.stage-hint { position: absolute; left: 12px; bottom: 10px; font-size: .75rem; color: rgba(239,230,216,.75); background: rgba(22,20,29,.55); padding: 2px 8px; border-radius: 6px; }
+
+/* Story panel */
+.story { display: grid; gap: 14px; max-width: 70ch; width: 100%; margin: 0 auto; }
+.eyebrow { font-size: var(--fs-0); text-transform: uppercase; letter-spacing: .14em; color: var(--fener); margin: 0; }
+.story h2 { font-family: var(--f-display); font-weight: 700; font-size: var(--fs-3); line-height: 1.15; margin: 0; text-wrap: balance; }
+.story h2:focus { outline: none; }
+.story p { margin: 0; }
+.text { display: grid; gap: 8px; color: var(--paper); }
+.quote { font-family: var(--f-display); font-style: italic; color: var(--paper); }
+.obs { border-left: 2px solid var(--fener); padding: 4px 0 4px 12px; color: var(--paper-dim); font-style: italic; }
+.choices { display: grid; gap: 10px; }
+.choice { text-align: left; background: var(--ink-2); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 16px; cursor: pointer; transition: border-color .2s, transform .2s; display: grid; gap: 2px; }
+.choice:hover { border-color: var(--kiraz); transform: translateX(3px); }
+.choice b { font-weight: 500; font-size: var(--fs-2); }
+.choice small { color: var(--paper-dim); }
+.result { display: grid; gap: 12px; }
+.deltas { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: var(--fs-0); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.chip.up { color: var(--ihlamur); border-color: rgba(167,194,160,.5); }
+.chip.down { color: var(--kiraz); border-color: rgba(224,86,108,.5); }
+.chip.note { color: var(--paper-dim); font-style: italic; }
+.primary { justify-self: start; background: var(--kiraz); color: #1b1016; border: 0; border-radius: 999px; padding: 10px 22px; font-weight: 700; cursor: pointer; }
+.primary:hover { background: #ea6c80; }
+.secondary { justify-self: start; background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 9px 20px; cursor: pointer; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+.fineprint { font-size: var(--fs-0); color: var(--paper-dim); }
+.title-hero { font-family: var(--f-display); font-size: var(--fs-4); line-height: 1.05; margin: 0; text-wrap: balance; }
+.title-hero em { color: var(--kiraz); font-style: italic; }
+
+/* Ending */
+.letter { background: var(--letter); color: var(--letter-ink); border-radius: 4px; padding: 26px clamp(18px, 5vw, 40px); font-family: var(--f-hand); font-size: 1.45rem; line-height: 1.35; display: grid; gap: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.35); transform: rotate(-.4deg); }
+.letter .sign { justify-self: end; }
+.ending-name { font-family: var(--f-display); font-size: var(--fs-3); margin: 0; color: var(--paper); }
+.tree { display: grid; gap: 0; }
+.tree-step { display: grid; grid-template-columns: 22px 1fr; gap: 10px; }
+.tree-rail { position: relative; }
+.tree-rail::before { content: ""; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--line); }
+.tree-rail::after { content: ""; position: absolute; left: 5px; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: var(--kiraz); }
+.tree-step:last-child .tree-rail::before { bottom: auto; height: 14px; }
+.tree-body { padding-bottom: 14px; min-width: 0; }
+.tree-body h4 { margin: 0 0 6px; font-size: var(--fs-0); text-transform: uppercase; letter-spacing: .12em; color: var(--paper-dim); font-weight: 500; }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opt { font-size: .85rem; padding: 3px 10px; border-radius: 6px; border: 1px dashed var(--line); color: var(--paper-dim); }
+.opt.taken { border: 1px solid var(--kiraz); background: rgba(224,86,108,.14); color: var(--paper); }
+.found { display: flex; flex-wrap: wrap; gap: 8px; }
+.found span { padding: 3px 10px; border-radius: 6px; background: var(--ink-2); border: 1px solid var(--line); font-size: .85rem; }
+.found span.yes { border-color: var(--fener); color: var(--fener); }
+h3.section { font-family: var(--f-display); font-size: var(--fs-2); margin: 8px 0 0; }
+
+/* Drawer */
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); background: var(--ink-2); border-left: 1px solid var(--line); padding: calc(20px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) 20px; overflow-y: auto; z-index: 20; display: grid; align-content: start; gap: 14px; box-shadow: -20px 0 50px rgba(0,0,0,.4); }
+.drawer h2 { font-family: var(--f-display); margin: 0; font-size: var(--fs-3); }
+.drawer-head { display: flex; justify-content: space-between; align-items: center; }
+.entries { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.entries li { border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+.entries .d { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--fener); }
+.setting { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--line); }
+.setting select, .setting input { accent-color: var(--kiraz); }
+select { background: var(--ink); color: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.scrim { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 19; }
+
+@media (max-width: 640px) {
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; flex-basis: 100%; }
+  .stat { min-width: 0; }
+  .stat-label { font-size: .62rem; letter-spacing: .06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stat-val { font-size: .85rem; }
+  .stage { height: clamp(220px, 42vh, 380px); }
+  .letter { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hotspot::before { animation: none; }
+  .fade, .meter i, .choice { transition: none; }
+}
+body.calm .hotspot::before { animation: none; }
+body.calm .fade, body.calm .meter i, body.calm .choice { transition: none; }
+</style>
+</head>
+<body>
+
+<div class="app" lang="tr">
+  <header class="hud">
+    <p class="brand">Kirazlı'da <span>Bir Ay</span></p>
+    <span class="clock" id="clock">Gün 1 · Akşamüstü</span>
+    <div class="stats" id="stats" aria-label="Durum">
+      <div class="stat" id="st-huzur"><span class="stat-label">Huzur</span><span class="stat-val" id="v-huzur">50</span><span class="meter"><i id="m-huzur"></i></span></div>
+      <div class="stat" id="st-birikim"><span class="stat-label">Birikim</span><span class="stat-val" id="v-birikim">60.000 ₺</span></div>
+      <div class="stat" id="st-saniye"><span class="stat-label">Saniye Hanım</span><span class="stat-val" id="v-saniye">30</span><span class="meter rel"><i id="m-saniye"></i></span></div>
+      <div class="stat" id="st-deniz"><span class="stat-label">Deniz</span><span class="stat-val" id="v-deniz">20</span><span class="meter rel"><i id="m-deniz"></i></span></div>
+    </div>
+    <div class="tools">
+      <button class="tool" id="btn-journal" type="button">Günlük <span class="count" id="j-count">0</span></button>
+      <button class="tool" id="btn-settings" type="button">Ayarlar</button>
+    </div>
+  </header>
+
+  <section class="stage" id="stage" aria-label="Sahne">
+    <canvas id="scene" aria-hidden="true"></canvas>
+    <div id="hotspots"></div>
+    <span class="stage-hint" id="stage-hint" hidden>Parlayan noktalara dokun: dikkat ettiklerin hatırlanır.</span>
+    <div class="fade"></div>
+  </section>
+
+  <section class="story" id="story" aria-live="polite"></section>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside lang="tr" class="drawer" id="drawer-journal" hidden aria-label="Günlük">
+  <div class="drawer-head"><h2>Günlük</h2><button class="tool" type="button" data-close>Kapat</button></div>
+  <ul class="entries" id="entries"></ul>
+</aside>
+<aside lang="tr" class="drawer" id="drawer-settings" hidden aria-label="Ayarlar">
+  <div class="drawer-head"><h2>Ayarlar</h2><button class="tool" type="button" data-close>Kapat</button></div>
+  <label class="setting" for="opt-calm">Hareketi azalt <input type="checkbox" id="opt-calm"></label>
+  <label class="setting" for="opt-text">Metin boyutu
+    <select id="opt-text"><option value="normal">Normal</option><option value="big">Büyük</option></select>
+  </label>
+  <div class="setting"><span>Kaydı sil ve baştan başla</span><button class="tool" type="button" id="btn-reset">Sıfırla</button></div>
+  <p class="fineprint">Bu bir deneme prototipidir. Kayıt yalnızca bu tarayıcıda tutulur; kişisel veri istenmez.</p>
+</aside>
+
+<script>
+(() => {
+'use strict';
+/* ---------- utilities ---------- */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tl = (n) => new Intl.NumberFormat('tr-TR').format(n) + ' ₺';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const SAVE_KEY = 'kirazli.save.v1', ENDINGS_KEY = 'kirazli.endings.v1', PREFS_KEY = 'kirazli.prefs.v1';
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* ---------- state & rules (deterministic) ---------- */
+const NEW_STATE = () => ({ v: 1, scene: 0, huzur: 50, birikim: 60000, saniye: 30, deniz: 20, flags: {}, path: [], journal: [], seen: {} });
+let S = NEW_STATE();
+let view = 'title'; // title | scene | result | ending
+let lastResult = null;
+
+function applyChoice(state, scene, choice) {
+  const e = choice.effect || {};
+  const before = { huzur: state.huzur, birikim: state.birikim, saniye: state.saniye, deniz: state.deniz };
+  state.huzur = clamp(state.huzur + (e.huzur || 0), 0, 100);
+  state.saniye = clamp(state.saniye + (e.saniye || 0), 0, 100);
+  state.deniz = clamp(state.deniz + (e.deniz || 0), 0, 100);
+  state.birikim = Math.max(0, state.birikim + (e.birikim || 0));
+  Object.assign(state.flags, choice.flags || {});
+  state.path.push({ scene: scene.id, choice: choice.id });
+  if (choice.journal) state.journal.push({ day: scene.clock, text: choice.journal });
+  const deltas = [];
+  for (const k of ['huzur', 'birikim', 'saniye', 'deniz']) { const d = state[k] - before[k]; if (d) deltas.push([k, d]); }
+  return deltas;
+}
+const rootedness = (s) => s.huzur + (s.saniye + s.deniz) / 2;
+function endingOf(s) {
+  const stay = s.flags.final;
+  if (stay === 'leave') return 'donus';
+  if (stay === 'stay' && rootedness(s) >= 110) return 'kok';
+  return 'arada';
+}
+const ENDINGS = { kok: 'Kök saldım', arada: 'Arada kaldım', donus: 'Dönme zamanı' };
+const LABELS = { huzur: 'Huzur', birikim: 'Birikim', saniye: 'Saniye Hanım', deniz: 'Deniz' };
+
+/* ---------- content ---------- */
+const SCENES = [
+  {
+    id: 'varis', clock: 'Gün 1 · Akşamüstü', title: 'Varış', look: 'dusk', fg: 'bus',
+    text: () => [
+      'Otobüs seni meydanda bırakıp bir toz bulutunun içinde uzaklaşıyor. Kirazlı: bir çeşme, bir cami, yol boyunca kiraz ağaçları.',
+      'Elinde tek bir valiz var. Biri sorsa, buraya neden geldiğini söylerdin?'
+    ],
+    hotspots: [
+      { id: 'saat', x: 22, y: 50, label: 'Terminal saati', text: 'Terminalin saati dördü on geçe durmuş. Kimse düzeltmemiş; belki gerek görmemişler.' },
+      { id: 'agac', x: 76, y: 54, label: 'Kiraz ağaçları', text: 'Ağaçlar henüz yeşil, ama dalların ucunda ilk kızarıklık başlamış. Üç hafta sonra şenlik varmış.' }
+    ],
+    choices: () => [
+      { id: 'rest', label: 'Yoruldum. Biraz nefes almak istedim.', effect: { huzur: 5 }, flags: { reason: 'rest' },
+        result: 'Derin bir nefes alıyorsun. Havada toprak ve odun dumanı kokusu var.', journal: 'Kirazlı\'ya geldim. Nefes almak için.' },
+      { id: 'start', label: 'Yeni bir başlangıç yapmak için.', flags: { reason: 'start' },
+        result: 'Valizini sıkıca tutuyorsun. Burada seni kimse tanımıyor. Bu hem korkutucu hem de hafifletici.', journal: 'Kirazlı\'ya geldim. Yeni bir başlangıç, dedim kendime.' },
+      { id: 'unknown', label: 'Bilmiyorum. Sadece bileti aldım.', flags: { reason: 'unknown' },
+        result: 'Belki her kararın bir gerekçesi olmak zorunda değildir.', journal: 'Kirazlı\'ya geldim. Neden geldiğimi hâlâ bilmiyorum.' }
+    ]
+  },
+  {
+    id: 'ev', clock: 'Gün 2 · Sabah', title: 'Mavi kapılı ev', look: 'morning', fg: 'house',
+    text: () => [
+      'Saniye Hanım otuz yıl bu kasabada öğretmenlik yapmış. Evin üst katını kiraya veriyor; bahçesi kiraz ağaçlarıyla dolu.',
+      { q: '"Aylık dokuz bin," diyor. "Bahçe de sizin sayılır. Ama ağaçlara bakan olmazsa kirazlar kuşlara kalır."' }
+    ],
+    hotspots: [
+      { id: 'foto', x: 39, y: 47, label: 'Penceredeki fotoğraf', flag: 'photo', text: 'Pencerenin içinde çerçeveli bir fotoğraf: mezuniyet cübbesi giymiş genç bir adam. Çerçevenin camında hiç toz yok.' },
+      { id: 'bahce', x: 74, y: 44, label: 'Bahçedeki ağaç', text: 'En yaşlı ağacın gövdesine boyayla bir çizgi çekilmiş. Altında küçük harflerle: "1994, ilk hasat."' }
+    ],
+    choices: () => [
+      { id: 'haggle', label: '"Yedi bine olur mu?"', effect: { birikim: 2000, saniye: -10 }, flags: { haggled: true },
+        result: 'Saniye Hanım bir an susuyor. "Olsun," diyor, "gençlerin işi zor." Gülümsüyor, ama gözleri gülmüyor.', journal: 'Kirayı yedi bine indirdim. Saniye Hanım biraz kırıldı sanırım.' },
+      { id: 'garden', label: '"Dokuz bin olsun. Ağaçlara ben bakarım."', effect: { saniye: 15, birikim: -1000 }, flags: { garden: true },
+        result: '"Sulama hortumu kilerde," diyor ve sana bir anahtar uzatıyor. Anahtarlıkta küçük, ahşap bir kiraz var. Makas ve gübre için ilk masrafın da çıktı.', journal: 'Ev tuttum. Bahçe artık benim sorumluluğumda.' },
+      { id: 'accept', label: '"Tamam, dokuz bin."', effect: { huzur: 5 },
+        result: 'Anlaşıyorsunuz: kısa, kibar ve mesafeli. Kendi alanın var, kimseye bir borcun yok.', journal: 'Ev tuttum. Saniye Hanım nazik ama mesafeli.' }
+    ]
+  },
+  {
+    id: 'carsi', clock: 'Gün 5 · Öğle', title: 'Çarşı', look: 'noon', fg: 'bakery',
+    text: () => [
+      'Eski şirketinden bir e-posta: "Uzaktan devam edebilirsin. Tam mesai, pazartesi toplantısı 09.00."',
+      'Aynı sabah fırının camında bir kâğıt: "Sabahçı aranıyor. Saat 05.00. Deniz\'e sorun." Deniz camın ardından unlu eliyle sana el sallıyor.'
+    ],
+    hotspots: [
+      { id: 'buhar', x: 62, y: 26, label: 'Fırın bacası', text: 'Bacadan ince bir buhar yükseliyor. Saat öğlen, ama ekmek kokusu hâlâ sokakta.' },
+      { id: 'telefon', x: 18, y: 72, label: 'Telefonun', text: 'Telefonunda 12 okunmamış mesaj var. Hepsi aynı gruptan: "Pazartesi senkron, kimler var?"' }
+    ],
+    choices: () => [
+      { id: 'remote', label: 'Uzaktan eski işine devam et.', effect: { birikim: 25000, huzur: -15 }, flags: { job: 'remote' },
+        result: 'Maaşın yatmaya devam edecek. Laptopun mutfak masasındaki yerini alıyor. Pencereden kirazlar görünüyor, ama çoğu zaman ekrana bakıyorsun.', journal: 'Eski işe uzaktan devam ediyorum. Para tamam, kafam hâlâ İstanbul\'da.' },
+      { id: 'bakery', label: 'Fırında sabahçı ol.', effect: { birikim: 8000, huzur: 15, deniz: 15 }, flags: { job: 'bakery' },
+        result: 'Deniz sana bir önlük fırlatıyor. "Hamur sabır ister," diyor. "İlk hafta ellerin acır."', journal: 'Fırında başladım. Sabah beşte kalkıyorum ve şaşırtıcı biçimde şikâyetçi değilim.' },
+      { id: 'both', label: 'İkisini birden yap.', effect: { birikim: 30000, huzur: -25, deniz: 5 }, flags: { job: 'both' },
+        result: 'Sabah beşte fırın, dokuzda toplantı. Gece yatağa düştüğünde kollarında un, kulaklarında bildirim sesi var.', journal: 'Hem fırın hem eski iş. Yorgunum ama hiçbir kapıyı kapatmak istemedim.' }
+    ]
+  },
+  {
+    id: 'senlik', clock: 'Gün 21 · Gece', title: 'Kiraz Şenliği', look: 'night', fg: 'festival',
+    text: (s) => {
+      const t = [];
+      if (s.flags.garden) t.push('Saniye Hanım bahçedeki kirazlardan kırk kavanoz reçel yaptı. Tezgâhı kurmak için gözleriyle seni arıyor.');
+      else if (s.flags.haggled) t.push('Saniye Hanım reçel tezgâhını tek başına kurmaya çalışıyor. Seni görüyor, ama yardım istemiyor.');
+      else t.push('Saniye Hanım reçel tezgâhını kuruyor. Kavanozlar ağır, masa biraz yamuk.');
+      if (s.flags.job === 'remote') t.push('Deniz fırın tezgâhında; seni görünce el sallıyor, sonra kalabalığa dönüyor.');
+      else t.push('Fırın tezgâhında Deniz yalnız. Şenlik ekmekleri fırından çıkmak üzere.');
+      if (s.flags.job === 'remote' || s.flags.job === 'both') t.push({ q: 'Cebinde telefon titriyor: "Acil. 20 dakikalık görüntülü görüşme?"' });
+      return t;
+    },
+    hotspots: [
+      { id: 'fener', x: 50, y: 22, label: 'Kâğıt fenerler', text: 'Fenerleri çocuklar asmış. Biri yamuk duruyor; kimse düzeltmiyor, herkes ona bakıp gülümsüyor.' },
+      { id: 'recel', x: 28, y: 63, label: 'Reçel kavanozları', text: 'Her kavanozun kapağında elle yazılmış bir tarih var. En eskisi geçen yazdan kalma.' }
+    ],
+    choices: (s) => {
+      const remoteLike = s.flags.job === 'remote' || s.flags.job === 'both';
+      const sanRes = s.flags.seen_photo
+        ? 'Kavanozları dizerken fotoğraftaki genci soruyorsun. "Oğlum," diyor. "Bu yaz da gelemeyecekmiş." Bir süre susuyor. "Ama sen buradasın."'
+        : 'Kavanozları birlikte diziyorsunuz. Saniye Hanım her müşteriye seni "bizim kiracı" diye tanıtıyor.';
+      return [
+        { id: 'saniye', label: 'Saniye Hanım\'ın tezgâhına yardım et.', effect: { saniye: 20, huzur: 5 }, flags: { fest: 'saniye' },
+          result: sanRes, journal: 'Şenlikte Saniye Hanım\'la reçel sattık.' },
+        { id: 'deniz', label: 'Deniz\'le fırın tezgâhında çalış.', effect: { deniz: 20, huzur: s.flags.job === 'bakery' ? 10 : 5 }, flags: { fest: 'deniz' },
+          result: 'Sıcak ekmekleri kâğıda sarıyorsun. Kasabalılar seni artık adınla çağırıyor. Deniz omzuna un bulaşmış bir el koyuyor.', journal: 'Şenlikte Deniz\'le ekmek dağıttık. Kasabalılar adımı biliyor.' },
+        remoteLike
+          ? { id: 'call', label: 'Görüşmeye bağlan.', effect: { birikim: 5000, huzur: -10, saniye: -5, deniz: -5 }, flags: { fest: 'call' },
+              result: 'Meydanın gürültüsünden kaçıp bir duvar dibine çekiliyorsun. Ekranda üç yüz, arkanda fenerler. Döndüğünde tezgâhlar toplanıyor.', journal: 'Şenlik gecesi iş görüşmesindeydim. Döndüğümde her şey bitmişti.' }
+          : { id: 'watch', label: 'Kenardan izle, kendine zaman ayır.', effect: { huzur: 10, saniye: -5, deniz: -5 }, flags: { fest: 'watch' },
+              result: 'Çeşmenin kenarına oturup kalabalığı izliyorsun. Bazen bir şeyin parçası olmadan da içinde olabilirsin.', journal: 'Şenliği çeşmenin kenarından izledim. Sessiz, güzel bir geceydi.' }
+      ];
+    }
+  },
+  {
+    id: 'tepe', clock: 'Gün 30 · Akşamüstü', title: 'Tepedeki bank', look: 'golden', fg: 'hill',
+    text: () => [
+      'Kasabanın üstündeki tepeye çıkıyorsun. Otuz gün önce indiğin meydan aşağıda, avuç içi kadar küçük.',
+      'Valizin hâlâ dolabın üstünde duruyor. Ay bitti. Şimdi ne olacak?'
+    ],
+    hotspots: [
+      { id: 'bank', x: 25, y: 72, label: 'Bankın sırtı', text: 'Bankın arkasına biri çakıyla "Ya kalsaydım" yazmış. Altında tarih yok.' },
+      { id: 'isik', x: 63, y: 60, label: 'Kasabanın ışıkları', text: 'Aşağıda ışıklar tek tek yanıyor. Hangisinin Saniye Hanım\'ın penceresi olduğunu artık biliyorsun.' }
+    ],
+    choices: () => [
+      { id: 'stay', label: '"Kalıyorum."', flags: { final: 'stay' }, journal: 'Kalmaya karar verdim.' },
+      { id: 'leave', label: '"İstanbul\'a dönüyorum."', flags: { final: 'leave' }, journal: 'Dönmeye karar verdim.' },
+      { id: 'later', label: '"Bir ay daha. Sonra bakarız."', flags: { final: 'later' }, journal: 'Kararı bir ay erteledim.' }
+    ]
+  }
+];
+/* static map of all options for the life tree */
+const TREE = [
+  ['Varış', [['rest', 'Nefes almak'], ['start', 'Yeni başlangıç'], ['unknown', 'Bilmiyorum']]],
+  ['Mavi kapılı ev', [['haggle', 'Pazarlık'], ['garden', 'Bahçeye bakmak'], ['accept', 'Kabul, mesafe']]],
+  ['Çarşı', [['remote', 'Uzaktan iş'], ['bakery', 'Fırın'], ['both', 'İkisi birden']]],
+  ['Kiraz Şenliği', [['saniye', 'Reçel tezgâhı'], ['deniz', 'Fırın tezgâhı'], ['call', 'İş görüşmesi'], ['watch', 'Kenardan izlemek']]],
+  ['Tepedeki bank', [['stay', 'Kalmak'], ['leave', 'Dönmek'], ['later', 'Ertelemek']]]
+];
+
+function letterFor(s) {
+  const f = s.flags, p = [];
+  p.push({ rest: 'Buraya nefes almaya gelmiştin. Bir ay sonra nefesin biraz daha derin; omuzların kulaklarından biraz daha uzak.',
+           start: 'Yeni bir başlangıç demiştin. Başlangıçların gürültülü olacağını sanıyordun; seninki bir fırının kapısı gibi sessiz açıldı.',
+           unknown: 'Neden geldiğini bilmiyordun. Şimdi biraz daha iyi biliyorsun, ama hâlâ tam değil. Belki öyle kalması da güzeldir.' }[f.reason] || '');
+  p.push({ remote: 'Geceleri ekranın ışığı hâlâ yanıyordu. Birikimin büyüdü, ama kirazların hangi gün kızardığını kaçırdın.',
+           bakery: 'Sabah beşte un kokusuyla uyandın. Deniz\'in kahkahası artık günün bir parçası.',
+           both: 'İki hayatı aynı anda taşımaya çalıştın. Çok yoruldun, ama ikisinden de vazgeçmedin.' }[f.job] || '');
+  if (f.garden && s.saniye >= 55) p.push(f.seen_photo
+      ? 'Saniye Hanım\'ın oğlu bu yaz da gelmedi. Belki bu yüzden sana her akşam çay koymayı sevdi. Reçel kavanozlarını sen etiketledin.'
+      : 'Saniye Hanım\'ın bahçesinde reçel kavanozlarını sen etiketledin. Anahtarlıktaki ahşap kiraz cebinde hep seninle.');
+  else if (f.haggled) p.push('Saniye Hanım\'la aranızda hep küçük bir mesafe kaldı. Kirayı her ay bir zarfa koyup kapısının altından verdin.');
+  else if (s.saniye >= 45) p.push('Saniye Hanım seni şenlikte "bizim kiracı" diye tanıttı. Bu kasabada bu, bir tür vatandaşlık.');
+  if (f.fest === 'call') p.push('Şenlik gecesini bir duvar dibinde, bir ekrana bakarak geçirdin. Fenerleri ancak toplanırken gördün.');
+  const e = endingOf(s), r = rootedness(s);
+  if (e === 'kok') p.push('"Kalıyorum" dedin ve bunu söylerken sesin titremedi. Valizi sonunda boşalttın; dolabın üstündeki yerine kış için reçel kavanozları dizdin.');
+  else if (e === 'donus') p.push(r >= 110 ? 'Döndün, ama bir parçan o tepedeki bankta kaldı. Saniye Hanım her pazar arıyor; Deniz bayramda ekmek gönderdi.' : 'Döndün ve bu bir yenilgi değildi. Burada kim olmadığını öğrendin; bu da bir cevap.');
+  else if (f.final === 'stay') p.push('"Kalıyorum" dedin, ama hâlâ eski hayatının saatine göre uyanıyorsun. Belki kök salmak bir aydan uzun sürüyordur.');
+  else p.push('Bir ay daha dedin. Bu bir kaçış değil; bazen insan cevabı yaşayarak bulur.');
+  return p.filter(Boolean);
+}
+
+/* ---------- scene painter (layered 2D canvas) ---------- */
+const LOOKS = {
+  dusk:    { sky: ['#2b2547', '#b8607a', '#f0b07a'], sun: { x: .8, y: .5, r: .05, c: '#ffd9a0' }, far: '#5d4c70', mid: '#3e3453', near: '#262033', leaf: '#2f3a33', win: .55, stars: .25, part: 'dust' },
+  morning: { sky: ['#86a9c8', '#cfe0e3', '#f4e1c4'], sun: { x: .18, y: .22, r: .045, c: '#fff4d8' }, far: '#97a9a6', mid: '#788f83', near: '#465a4b', leaf: '#4f6b4c', win: 0, stars: 0, part: 'petal' },
+  noon:    { sky: ['#5c92c2', '#a8cbdc', '#e4ede6'], sun: { x: .55, y: .1, r: .035, c: '#fffbea' }, far: '#9fb2a6', mid: '#7d9383', near: '#4e604d', leaf: '#557150', win: 0, stars: 0, part: 'steam' },
+  night:   { sky: ['#0d0f23', '#1e2345', '#3a3159'], moon: { x: .84, y: .16, r: .03 }, far: '#2a2b48', mid: '#1f1f38', near: '#141427', leaf: '#18202a', win: .85, stars: 1, part: 'lantern' },
+  golden:  { sky: ['#3a3456', '#d48a60', '#f4cd88'], sun: { x: .5, y: .64, r: .075, c: '#ffcf87' }, far: '#7b5b63', mid: '#56424f', near: '#2c2430', leaf: '#2e2b2c', win: .45, stars: .1, part: 'dust' }
+};
+const cv = $('#scene'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, current = SCENES[0], px = 0, pxTarget = 0, particles = [], raf = 0, t0 = performance.now();
+const calm = () => document.body.classList.contains('calm') || matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function resize() {
+  const r = cv.getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = r.width; H = r.height;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  seedParticles();
+  if (calm()) draw(0);
+}
+function hill(base, amp, freq, color, seed, shift) {
+  const R = rng(seed), ph = [R() * 6, R() * 6, R() * 6];
+  ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(-40, H);
+  for (let x = -40; x <= W + 40; x += 8) {
+    const u = (x + shift) / W;
+    const y = H * base + amp * H * (Math.sin(u * freq + ph[0]) * .5 + Math.sin(u * freq * 2.3 + ph[1]) * .3 + Math.sin(u * freq * 5.1 + ph[2]) * .12);
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W + 40, H); ctx.closePath(); ctx.fill();
+}
+function town(look, shift, t, baseY, scale) {
+  const R = rng(7);
+  const n = Math.max(10, Math.round(W / 46));
+  ctx.save(); ctx.translate(shift, 0);
+  for (let i = 0; i < n; i++) {
+    const x = (i / n) * W * 1.05 - 20 + R() * 20, w = (18 + R() * 22) * scale, h = (16 + R() * 26) * scale, y = H * baseY - h + R() * 6;
+    ctx.fillStyle = look.mid; ctx.fillRect(x, y, w, h + 30);
+    ctx.beginPath(); ctx.moveTo(x - 3, y); ctx.lineTo(x + w / 2, y - h * .45); ctx.lineTo(x + w + 3, y); ctx.fill();
+    const lit = R();
+    if (lit < look.win) {
+      const fl = .75 + .25 * Math.sin(t * .002 + i * 1.7);
+      ctx.fillStyle = `rgba(241,183,94,${(calm() ? .9 : fl).toFixed(2)})`;
+      ctx.fillRect(x + w * .3, y + h * .35, Math.max(3, w * .18), Math.max(3, h * .2));
+    }
+    if (i === Math.floor(n * .36)) { // minaret
+      const mx = x + w + 6, mh = 70 * scale;
+      ctx.fillStyle = look.mid; ctx.fillRect(mx, H * baseY - mh, 6 * scale, mh + 30);
+      ctx.fillRect(mx - 2 * scale, H * baseY - mh * .72, 10 * scale, 4 * scale);
+      ctx.beginPath(); ctx.moveTo(mx - 1, H * baseY - mh); ctx.lineTo(mx + 3 * scale, H * baseY - mh - 18 * scale); ctx.lineTo(mx + 6 * scale + 1, H * baseY - mh); ctx.fill();
+      ctx.beginPath(); ctx.arc(mx - 26 * scale, H * baseY - 8 * scale, 20 * scale, Math.PI, 0); ctx.fill(); // dome
+    }
+  }
+  ctx.restore();
+}
+function tree(x, y, s, look, seed, fruit) {
+  const R = rng(seed);
+  ctx.fillStyle = look.near; ctx.fillRect(x - 3 * s, y - 40 * s, 6 * s, 44 * s);
+  for (let i = 0; i < 6; i++) {
+    ctx.fillStyle = i % 2 ? look.leaf : look.near;
+    ctx.beginPath(); ctx.arc(x + (R() - .5) * 46 * s, y - 52 * s + (R() - .5) * 26 * s, (16 + R() * 12) * s, 0, Math.PI * 2); ctx.fill();
+  }
+  if (fruit) { ctx.fillStyle = '#d4445c'; for (let i = 0; i < 14; i++) { ctx.beginPath(); ctx.arc(x + (R() - .5) * 52 * s, y - 52 * s + (R() - .5) * 32 * s, 2.2 * s, 0, Math.PI * 2); ctx.fill(); } }
+}
+function glow(x, y, r, c, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1;
+}
+function foreground(kind, look, t, shift) {
+  const s = Math.min(W, H * 1.6) / 700;
+  ctx.save(); ctx.translate(shift, 0);
+  const G = H * .82;
+  ctx.fillStyle = look.near; ctx.fillRect(-60, G, W + 120, H - G);
+  if (kind === 'bus') {
+    ctx.fillStyle = look.near; ctx.fillRect(W * .12, H * .4, W * .2, G - H * .4);
+    ctx.fillRect(W * .1, H * .38, W * .24, 10 * s);
+    ctx.fillStyle = '#e9dcc4'; ctx.beginPath(); ctx.arc(W * .22, H * .5, 13 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = look.near; ctx.lineWidth = 2 * s; ctx.beginPath(); ctx.moveTo(W * .22, H * .5); ctx.lineTo(W * .22, H * .5 - 9 * s); ctx.moveTo(W * .22, H * .5); ctx.lineTo(W * .22 + 6 * s, H * .5 + 3 * s); ctx.stroke();
+    ctx.fillStyle = 'rgba(241,183,94,.85)'; ctx.fillRect(W * .15, H * .6, W * .05, H * .1); ctx.fillRect(W * .25, H * .6, W * .04, H * .1);
+    ctx.fillStyle = look.near; ctx.fillRect(W * .44, G - 70 * s, 4 * s, 70 * s); ctx.fillRect(W * .44 - 12 * s, G - 74 * s, 28 * s, 14 * s);
+    ctx.fillRect(W * .48, G - 20 * s, 60 * s, 5 * s); ctx.fillRect(W * .48 + 4 * s, G - 15 * s, 4 * s, 15 * s); ctx.fillRect(W * .48 + 52 * s, G - 15 * s, 4 * s, 15 * s);
+    const bx = calm() ? W * 1.3 : W * .6 + ((t * .03) % (W * 1.6));
+    if (bx < W + 200) { ctx.fillStyle = look.near; ctx.fillRect(bx, G - 52 * s, 150 * s, 44 * s); ctx.fillStyle = 'rgba(241,183,94,.5)'; for (let i = 0; i < 5; i++) ctx.fillRect(bx + 10 * s + i * 27 * s, G - 46 * s, 18 * s, 14 * s); }
+    tree(W * .7, G, s * 1.3, look, 11, false); tree(W * .82, G, s * 1.1, look, 12, false); tree(W * .94, G, s * 1.4, look, 13, false);
+  } else if (kind === 'house') {
+    ctx.fillStyle = '#d9cdb8'; ctx.fillRect(W * .24, H * .32, W * .32, G - H * .32);
+    ctx.fillStyle = '#7d5a4a'; ctx.beginPath(); ctx.moveTo(W * .22, H * .33); ctx.lineTo(W * .4, H * .18); ctx.lineTo(W * .58, H * .33); ctx.fill();
+    ctx.fillStyle = '#3f6f9a'; ctx.fillRect(W * .44, H * .55, W * .07, G - H * .55);
+    ctx.fillStyle = '#5b4a40'; ctx.fillRect(W * .335, H * .4, W * .1, H * .15);
+    ctx.fillStyle = '#efe2c7'; ctx.fillRect(W * .345, H * .415, W * .08, H * .12);
+    ctx.fillStyle = '#8a6a52'; ctx.fillRect(W * .375, H * .44, W * .025, H * .055);
+    ctx.fillStyle = look.near; for (let i = 0; i < 14; i++) ctx.fillRect(W * .02 + i * W * .016, G - 26 * s, 5 * s, 26 * s);
+    ctx.fillRect(W * .02, G - 20 * s, W * .22, 3 * s);
+    tree(W * .74, G, s * 2.1, look, 21, true); tree(W * .9, G, s * 1.5, look, 22, true);
+  } else if (kind === 'bakery') {
+    ctx.fillStyle = '#c9b79a'; ctx.fillRect(W * .4, H * .32, W * .4, G - H * .32);
+    ctx.fillStyle = '#8f7a63'; ctx.fillRect(W * .6, H * .16, W * .04, H * .16);
+    for (let i = 0; i < 8; i++) { ctx.fillStyle = i % 2 ? '#efe2c7' : '#c44a5e'; ctx.beginPath(); const ax = W * .4 + i * W * .05; ctx.moveTo(ax, H * .45); ctx.lineTo(ax + W * .05, H * .45); ctx.lineTo(ax + W * .055, H * .53); ctx.lineTo(ax - W * .005, H * .53); ctx.fill(); }
+    ctx.fillStyle = '#3c2f2a'; ctx.fillRect(W * .47, H * .36, W * .26, H * .07);
+    ctx.fillStyle = '#efe2c7'; ctx.font = `700 ${Math.round(H * .05)}px Alegreya, Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('FIRIN', W * .6, H * .397);
+    ctx.fillStyle = 'rgba(241,183,94,.55)'; ctx.fillRect(W * .44, H * .58, W * .16, H * .18);
+    ctx.fillStyle = '#3f4a3c'; ctx.fillRect(W * .65, H * .58, W * .08, G - H * .58);
+    ctx.fillStyle = look.near; ctx.fillRect(W * .1, H * .74, W * .16, 6 * s); ctx.fillRect(W * .17, H * .74, 5 * s, G - H * .74);
+    ctx.fillStyle = '#cfe6ff'; ctx.fillRect(W * .175, H * .715, 14 * s, 8 * s); glow(W * .18 + 7 * s, H * .72, 26 * s, 'rgba(200,230,255,.9)', .6);
+    tree(W * .9, G, s * 1.6, look, 31, true);
+  } else if (kind === 'festival') {
+    for (let k = 0; k < 2; k++) {
+      const y0 = H * (.16 + k * .1), sag = H * .1;
+      ctx.strokeStyle = 'rgba(239,230,216,.35)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (let x = 0; x <= W; x += 10) { const u = x / W; const y = y0 + sag * 4 * u * (1 - u); x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      for (let i = 1; i < 12; i++) {
+        const u = i / 12, x = u * W, y = y0 + sag * 4 * u * (1 - u) + 10 * s, c = ['#f1b75e', '#e0566c', '#f3d9a0'][(i + k) % 3];
+        const fl = calm() ? 1 : .8 + .2 * Math.sin(t * .004 + i * 2 + k);
+        glow(x, y, 26 * s, c, .5 * fl); ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(x, y, 6 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+    const stall = (cx, label, jar) => {
+      ctx.fillStyle = '#3a2c35'; ctx.fillRect(cx - W * .12, H * .62, W * .24, G - H * .62);
+      ctx.fillStyle = '#c44a5e'; ctx.fillRect(cx - W * .13, H * .53, W * .26, H * .05);
+      ctx.fillStyle = 'rgba(241,183,94,.9)'; glow(cx, H * .62, 60 * s, 'rgba(241,183,94,.7)', .5);
+      for (let i = 0; i < 6; i++) { ctx.fillStyle = jar ? '#b0283f' : '#d8a35d'; if (jar) ctx.fillRect(cx - W * .1 + i * W * .035, H * .6, W * .022, H * .035); else { ctx.beginPath(); ctx.ellipse(cx - W * .09 + i * W * .035, H * .61, W * .016, H * .018, 0, 0, Math.PI * 2); ctx.fill(); } }
+      ctx.fillStyle = '#efe2c7'; ctx.font = `600 ${Math.round(H * .035)}px Alegreya, Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, cx, H * .555);
+    };
+    stall(W * .28, 'REÇEL', true); stall(W * .72, 'EKMEK', false);
+    const R = rng(41); ctx.fillStyle = '#0b0b18';
+    for (let i = 0; i < 9; i++) { const x = W * (.05 + R() * .9), h = (34 + R() * 16) * s; ctx.beginPath(); ctx.arc(x, G - h, 7 * s, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(x - 7 * s, G - h + 6 * s, 14 * s, h); }
+  } else if (kind === 'hill') {
+    ctx.fillStyle = look.near; ctx.beginPath(); ctx.moveTo(-60, H * .72); ctx.quadraticCurveTo(W * .3, H * .62, W * .55, H * .8); ctx.lineTo(W * .55, H); ctx.lineTo(-60, H); ctx.fill();
+    const bx = W * .18, by = H * .76;
+    ctx.fillStyle = '#1a1520'; ctx.fillRect(bx, by - 12 * s, 90 * s, 6 * s); ctx.fillRect(bx, by - 30 * s, 90 * s, 5 * s);
+    ctx.fillRect(bx + 6 * s, by - 12 * s, 5 * s, 18 * s); ctx.fillRect(bx + 80 * s, by - 12 * s, 5 * s, 18 * s);
+    ctx.beginPath(); ctx.arc(bx + 50 * s, by - 44 * s, 8 * s, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(bx + 42 * s, by - 36 * s, 16 * s, 26 * s);
+    tree(W * .06, H * .74, s * 1.6, look, 51, true);
+  }
+  ctx.restore();
+}
+function seedParticles() {
+  const kind = LOOKS[current.look].part, R = rng(99), n = kind === 'steam' ? 26 : 34;
+  particles = Array.from({ length: n }, (_, i) => ({ x: R() * W, y: R() * H, v: .2 + R() * .6, p: R() * 6, i }));
+}
+function drawParticles(kind, t) {
+  for (const q of particles) {
+    let x, y, a;
+    if (kind === 'dust') { x = (q.x + Math.sin(t * .0004 + q.p) * 20) % W; y = (q.y - t * .006 * q.v) % H; if (y < 0) y += H; ctx.fillStyle = 'rgba(255,220,170,.5)'; ctx.fillRect(x, y, 1.6, 1.6); }
+    else if (kind === 'petal') { x = (q.x + t * .02 * q.v) % (W + 40); y = (q.y + t * .012 * q.v) % H; ctx.fillStyle = 'rgba(244,190,200,.8)'; ctx.beginPath(); ctx.ellipse(x, y, 3, 1.6, t * .002 + q.p, 0, Math.PI * 2); ctx.fill(); }
+    else if (kind === 'steam') { const life = ((t * .0003 * q.v + q.p) % 1); x = W * .62 + Math.sin(life * 6 + q.p) * 14 + life * 40; y = H * .16 - life * H * .2; a = (1 - life) * .35; ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`; ctx.beginPath(); ctx.arc(x, y, 4 + life * 14, 0, Math.PI * 2); ctx.fill(); }
+    else if (kind === 'lantern') { x = q.x + Math.sin(t * .0007 + q.p) * 30; y = H * .4 + (q.y % (H * .4)) + Math.cos(t * .0009 + q.p) * 16; a = .4 + .4 * Math.sin(t * .003 + q.p); glow(x, y, 6, 'rgba(241,200,110,1)', a); }
+  }
+}
+function draw(t) {
+  const L = LOOKS[current.look];
+  px += (pxTarget - px) * .05;
+  const P = calm() ? 0 : px;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, L.sky[0]); g.addColorStop(.6, L.sky[1]); g.addColorStop(1, L.sky[2]);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (L.stars) { const R = rng(3); for (let i = 0; i < 120 * L.stars; i++) { const tw = calm() ? .7 : .5 + .5 * Math.sin(t * .002 + i); ctx.fillStyle = `rgba(255,255,240,${(tw * .8).toFixed(2)})`; ctx.fillRect(R() * W, R() * H * .55, 1.3, 1.3); } }
+  if (L.sun) { glow(W * L.sun.x + P * 3, H * L.sun.y, H * L.sun.r * 5, L.sun.c, .55); ctx.fillStyle = L.sun.c; ctx.beginPath(); ctx.arc(W * L.sun.x + P * 3, H * L.sun.y, H * L.sun.r, 0, Math.PI * 2); ctx.fill(); }
+  if (L.moon) { glow(W * L.moon.x, H * L.moon.y, H * .2, 'rgba(220,225,255,.8)', .35); ctx.fillStyle = '#e8e6f2'; ctx.beginPath(); ctx.arc(W * L.moon.x, H * L.moon.y, H * L.moon.r, 0, Math.PI * 2); ctx.fill(); }
+  hill(.52, .08, 3, L.far, 1, P * 4);
+  const hillScene = current.fg === 'hill';
+  hill(hillScene ? .66 : .64, .05, 4, L.mid, 2, P * 8);
+  town(L, P * 8, t, hillScene ? .66 : .64, hillScene ? .7 : 1);
+  foreground(current.fg, L, t, P * 16);
+  if (!calm()) drawParticles(L.part, t);
+  const v = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .3, W / 2, H / 2, Math.max(W, H) * .75);
+  v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(10,8,16,.45)');
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+function loop(now) { draw(now - t0); raf = requestAnimationFrame(loop); }
+function startLoop() { cancelAnimationFrame(raf); if (calm()) draw(0); else raf = requestAnimationFrame(loop); }
+$('#stage').addEventListener('pointermove', (e) => { const r = e.currentTarget.getBoundingClientRect(); pxTarget = ((e.clientX - r.left) / r.width - .5) * 2; });
+$('#stage').addEventListener('pointerleave', () => { pxTarget = 0; });
+
+/* ---------- UI rendering ---------- */
+const story = $('#story');
+function hud() {
+  $('#clock').textContent = view === 'title' ? 'Deneme senaryosu' : (view === 'ending' ? 'Bir ay sonra' : current.clock);
+  $('#v-huzur').textContent = S.huzur; $('#m-huzur').style.width = S.huzur + '%';
+  $('#v-birikim').textContent = tl(S.birikim);
+  $('#v-saniye').textContent = S.saniye; $('#m-saniye').style.width = S.saniye + '%';
+  $('#v-deniz').textContent = S.deniz; $('#m-deniz').style.width = S.deniz + '%';
+  $('#j-count').textContent = S.journal.length;
+  $('#entries').innerHTML = S.journal.length ? S.journal.slice().reverse().map(j => `<li><div class="d">${esc(j.day)}</div>${esc(j.text)}</li>`).join('') : '<li class="fineprint">Henüz bir şey yazılmadı. Önemli anlar buraya kendiliğinden düşer.</li>';
+}
+function flash(keys) { for (const k of keys) { const el = $('#st-' + k); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } }
+function setScene(i, instant) {
+  const go = () => { current = SCENES[i]; seedParticles(); renderHotspots(); startLoop(); };
+  if (instant || calm()) { go(); return Promise.resolve(); }
+  const st = $('#stage'); st.classList.add('dark');
+  return new Promise(res => setTimeout(() => { go(); st.classList.remove('dark'); res(); }, 480));
+}
+function renderHotspots() {
+  const box = $('#hotspots');
+  const show = view === 'scene';
+  box.innerHTML = show ? current.hotspots.map(h => `<button type="button" class="hotspot${S.seen[current.id + ':' + h.id] ? ' seen' : ''}" style="left:${h.x}%;top:${h.y}%" data-h="${h.id}" aria-label="İncele: ${esc(h.label)}"><span class="tip">${esc(h.label)}</span></button>`).join('') : '';
+  $('#stage-hint').hidden = !(show && S.scene === 0);
+}
+function textBlock(lines) { return lines.map(l => typeof l === 'string' ? `<p>${esc(l)}</p>` : `<p class="quote">${esc(l.q)}</p>`).join(''); }
+function focusHead() { const h = story.querySelector('h2'); if (h) h.focus({ preventScroll: true }); }
+
+function renderTitle() {
+  const has = store.get(SAVE_KEY, null);
+  story.innerHTML = `
+    <p class="eyebrow">Ya olsaydı · aday senaryo</p>
+    <h1 class="title-hero">Küçük bir kasabaya <em>taşınsaydın?</em></h1>
+    <div class="text"><p>Kirazlı. Bir ev, iki komşu, otuz gün. Hiçbir seçim doğru ya da yanlış değil; her biri başka bir hayat.</p></div>
+    <div class="row">
+      ${has && has.scene > 0 ? '<button class="primary" type="button" id="btn-continue">Kaldığın yerden devam et</button><button class="secondary" type="button" id="btn-new">Yeniden başla</button>' : '<button class="primary" type="button" id="btn-new">Başla</button>'}
+    </div>
+    <p class="fineprint">Kurgusal profil · yaklaşık 10 dakika · 5 sahne · 3 son. Bu bir oynanabilir deneme prototipidir.</p>`;
+}
+function renderScene() {
+  const sc = current;
+  story.innerHTML = `
+    <p class="eyebrow">${esc(sc.clock)}</p>
+    <h2 tabindex="-1">${esc(sc.title)}</h2>
+    <div class="text">${textBlock(sc.text(S))}</div>
+    <div id="obs"></div>
+    <div class="choices">${sc.choices(S).map(c => `<button type="button" class="choice" data-c="${c.id}"><b>${esc(c.label)}</b></button>`).join('')}</div>`;
+}
+function renderResult() {
+  const { choice, deltas } = lastResult;
+  const chips = deltas.length ? deltas.map(([k, d]) => `<span class="chip ${d > 0 ? 'up' : 'down'}">${LABELS[k]} ${d > 0 ? '+' : '−'}${k === 'birikim' ? tl(Math.abs(d)) : Math.abs(d)}</span>`).join('')
+    : '<span class="chip note">Bu cevap bir sayıyı değiştirmedi, ama hatırlanacak.</span>';
+  story.innerHTML = `
+    <p class="eyebrow">${esc(current.clock)} · sonuç</p>
+    <h2 tabindex="-1">${esc(choice.label.replace(/^"|"$/g, ''))}</h2>
+    <div class="result">
+      <p>${esc(choice.result)}</p>
+      <div class="deltas" aria-label="Değişenler">${chips}</div>
+      ${choice.journal ? '<p class="fineprint">Günlüğe yazıldı.</p>' : ''}
+      <button class="primary" type="button" id="btn-next">Devam</button>
+    </div>`;
+}
+function renderEnding() {
+  const e = endingOf(S);
+  const found = store.get(ENDINGS_KEY, {}); found[e] = true; store.set(ENDINGS_KEY, found);
+  const taken = Object.fromEntries(S.path.map(p => [p.scene, p.choice]));
+  const ids = SCENES.map(s => s.id);
+  const tree = TREE.map(([name, opts], i) => `<div class="tree-step"><div class="tree-rail"></div><div class="tree-body"><h4>${esc(name)}</h4><div class="opts">${opts.map(([id, l]) => `<span class="opt${taken[ids[i]] === id ? ' taken' : ''}">${esc(l)}</span>`).join('')}</div></div></div>`).join('');
+  story.innerHTML = `
+    <p class="eyebrow">Bir ay sonra · son</p>
+    <h2 tabindex="-1" class="ending-name">${ENDINGS[e]}</h2>
+    <div class="letter" role="article" aria-label="Kendine mektup">
+      ${letterFor(S).map(p => `<p style="margin:0">${esc(p)}</p>`).join('')}
+      <p style="margin:0">Ya kalsaydın? Ya dönseydin? Bu sefer bunu sen seçtin.</p>
+      <p class="sign" style="margin:0">— Kirazlı'daki sen</p>
+    </div>
+    <h3 class="section">Hayat ağacın</h3>
+    <p class="fineprint">Dolu olanlar senin yolun. Kesikli olanlar seçmediğin hayatlar.</p>
+    <div class="tree">${tree}</div>
+    <h3 class="section">Ulaştığın sonlar · ${Object.keys(found).length}/3</h3>
+    <div class="found">${Object.keys(ENDINGS).map(k => `<span class="${found[k] ? 'yes' : ''}">${found[k] ? ENDINGS[k] : '???'}</span>`).join('')}</div>
+    <div class="row"><button class="primary" type="button" id="btn-again">Başka bir hayat dene</button></div>`;
+}
+function render() {
+  hud();
+  if (view === 'title') renderTitle();
+  else if (view === 'scene') renderScene();
+  else if (view === 'result') renderResult();
+  else renderEnding();
+  renderHotspots();
+  if (view !== 'title') focusHead();
+}
+function save() { store.set(SAVE_KEY, { S, view: view === 'result' ? 'scene-next' : view }); }
+
+/* ---------- events ---------- */
+story.addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id === 'btn-new') { S = NEW_STATE(); view = 'scene'; await setScene(0); render(); save(); return; }
+  if (b.id === 'btn-continue') { const sv = store.get(SAVE_KEY, null); if (sv) { S = sv.S; view = S.scene >= SCENES.length ? 'ending' : 'scene'; await setScene(Math.min(S.scene, SCENES.length - 1)); render(); } return; }
+  if (b.dataset.c) {
+    const choice = current.choices(S).find(c => c.id === b.dataset.c);
+    const deltas = applyChoice(S, current, choice);
+    flash(deltas.map(d => d[0]));
+    if (current.id === 'tepe') { S.scene = SCENES.length; view = 'ending'; save(); render(); return; }
+    lastResult = { choice, deltas }; view = 'result'; S.scene += 1; save(); render(); return;
+  }
+  if (b.id === 'btn-next') { view = 'scene'; await setScene(S.scene); render(); save(); return; }
+  if (b.id === 'btn-again') { store.del(SAVE_KEY); S = NEW_STATE(); view = 'title'; await setScene(0); render(); return; }
+});
+$('#hotspots').addEventListener('click', (e) => {
+  const b = e.target.closest('.hotspot'); if (!b) return;
+  const h = current.hotspots.find(x => x.id === b.dataset.h);
+  const key = current.id + ':' + h.id;
+  const first = !S.seen[key];
+  S.seen[key] = true; if (h.flag) S.flags['seen_' + h.flag] = true;
+  if (first) S.journal.push({ day: current.clock, text: 'Fark ettim: ' + h.text });
+  b.classList.add('seen');
+  const o = $('#obs'); if (o) o.innerHTML = `<p class="obs">${esc(h.text)}</p>`;
+  hud(); save();
+});
+function openDrawer(id) { $('#scrim').hidden = false; $(id).hidden = false; $(id).querySelector('[data-close]').focus(); }
+function closeDrawers() { $('#scrim').hidden = true; document.querySelectorAll('.drawer').forEach(d => d.hidden = true); }
+$('#btn-journal').addEventListener('click', () => openDrawer('#drawer-journal'));
+$('#btn-settings').addEventListener('click', () => openDrawer('#drawer-settings'));
+$('#scrim').addEventListener('click', closeDrawers);
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeDrawers));
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawers(); });
+const prefs = store.get(PREFS_KEY, { calm: false, text: 'normal' });
+function applyPrefs() { document.body.classList.toggle('calm', !!prefs.calm); document.body.classList.toggle('big-text', prefs.text === 'big'); $('#opt-calm').checked = !!prefs.calm; $('#opt-text').value = prefs.text; }
+$('#opt-calm').addEventListener('change', (e) => { prefs.calm = e.target.checked; store.set(PREFS_KEY, prefs); applyPrefs(); startLoop(); });
+$('#opt-text').addEventListener('change', (e) => { prefs.text = e.target.value; store.set(PREFS_KEY, prefs); applyPrefs(); });
+$('#btn-reset').addEventListener('click', async () => { store.del(SAVE_KEY); store.del(ENDINGS_KEY); S = NEW_STATE(); view = 'title'; closeDrawers(); await setScene(0, true); render(); });
+
+/* ---------- boot ---------- */
+function start(data) {
+  applyPrefs();
+  if (data && data.S) { S = data.S; view = data.view || 'scene'; lastResult = null; if (!['title', 'scene', 'ending'].includes(view)) view = 'scene'; }
+  current = SCENES[Math.min(S.scene, SCENES.length - 1)];
+  new ResizeObserver(resize).observe(cv);
+  resize(); startLoop(); render();
+  if (document.fonts) document.fonts.ready.then(() => { if (calm()) draw(0); });
+}
+window.claude?.hot?.snapshot?.(() => ({ S, view }));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
+</body>
+</html>
